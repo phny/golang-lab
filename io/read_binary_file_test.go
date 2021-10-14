@@ -57,6 +57,36 @@ func ReadFeature(path string) ([]float32, error) {
 	return EncodeFeatureByte2Float(bytes), nil
 }
 
+// Normalize 特征归一化
+func Normalize(feature []float32) []float32 {
+	dst := make([]float32, len(feature))
+	var dev float32
+	for _, v := range feature {
+		dev += (v * v)
+	}
+	std := math.Sqrt(float64(dev))
+	for i := range dst {
+		dst[i] = (feature[i]) / float32(std)
+	}
+	return dst
+}
+
+// SaveFeatures 保存特征到文件
+func SaveFeatures(path string, features []float32) error {
+	datas := EncodeFeatureFloat2Byte(features)
+	fp, err := os.Create(path)
+    if err != nil {
+        log.Fatal(err)
+        return err
+    }
+    defer fp.Close()
+
+	buf := new(bytes.Buffer)
+    binary.Write(buf, binary.LittleEndian, datas)
+    fp.Write(buf.Bytes())
+	return nil
+}
+
 
 // TestReadBinaryFile 测试读取特征文件函数
 func TestReadBinaryFile(t *testing.T) {
